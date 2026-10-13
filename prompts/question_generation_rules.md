@@ -1,8 +1,8 @@
 # Question generation rules
 
-These are the instructions given to the Claude Opus 5.5 agents that drafted the candidate questions of SejongQA. The same rules applied to all question types. This file summarizes the instructions; it is not a verbatim prompt.
+Rules given to the Claude Opus 5.5 agents that drafted the candidate questions. The same rules applied to every question type. This is a summary of the instructions, not the prompt itself.
 
-Candidates drafted under these rules then went through two verification stages: a separate LLM verification (`independent_solving_protocol.md`) and a human review in which two reviewers checked every question, answer and quotation against the source articles. The human review excluded 25 questions, leaving the final 975.
+Each draft was then checked twice, first by a separate LLM (`independent_solving_protocol.md`) and then by two human reviewers, who compared every question, answer and quotation with the source articles and removed 25 questions.
 
 ## 1. Material
 - The facts used in a question come only from the wiki.
@@ -15,11 +15,11 @@ Candidates drafted under these rules then went through two verification stages: 
 - The answer is a short single span with exactly one correct value. A title that could refer to several people is restricted by the event described in the question.
 
 ## 3. Formats by type
-- **Identity (contrastive pairs).** A pair is two questions sharing a `pair_id`; it counts as correct only if both questions are answered correctly.
+- Identity (contrastive pairs): two questions share a `pair_id`, and the pair counts as correct only if both are answered correctly.
   - Same-person pair (Alias): the two questions ask about the same fact of the same person under different names (personal name, title or appellation). Both answers are the same.
   - Different-person pair (Confusable): the two questions use the same question frame for different people with identical or easily confused names. The answers differ.
-- **Temporal (contrastive pairs).** The two questions share the same anchor event, and the temporal expression of one is replaced by its opposite or by a neighboring expression, so that the two answers differ. Both answers must satisfy the stated relation according to the dates recorded in the source articles. Temporal expressions are defined as calendar intervals relative to the anchor article and are grouped into day, month, year and order categories.
-- **Relation Chain.** A chain passes through N different wiki pages in order (N = 2, 3, 5, 7). Shortcuts that skip an intermediate page are not allowed.
+- Temporal (contrastive pairs): the two questions share the same anchor event, and the temporal expression of one is replaced by its opposite or by a neighboring expression, so that the two answers differ. Both answers must satisfy the stated relation according to the dates recorded in the source articles. Temporal expressions are defined as calendar intervals relative to the anchor article and are grouped into day, month, year and order categories.
+- Relation Chain: a chain passes through N different wiki pages in order (N = 2, 3, 5, 7), with no shortcut that skips an intermediate page.
 
 ## 4. Draft record format (one JSON object per line)
 ```json

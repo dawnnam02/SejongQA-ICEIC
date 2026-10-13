@@ -20,7 +20,7 @@ import sys
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(HERE, "scripts"))
-from score import em, ABSTAIN  # noqa: E402
+from score import ABSTAIN, em, load as read_jsonl  # noqa: E402
 
 fails = 0
 
@@ -33,9 +33,7 @@ def ck(label, got, want):
 
 
 def jl(*p):
-    # text mode reads both LF and CRLF files
-    with open(os.path.join(HERE, *p), encoding="utf-8") as f:
-        return [json.loads(l) for l in f if l.strip()]
+    return read_jsonl(os.path.join(HERE, *p))
 
 
 def tsv(*p):
@@ -60,7 +58,6 @@ CAT = {"Alias": lambda g: g["sub"] == "같은 사람", "Confusable": lambda g: g
        "Temporal": lambda g: g["category"] == "시간추론", "Relation Chain": lambda g: g["category"] == "멀티홉"}
 CHAIN = {k: (lambda g, k=k: g["category"] == "멀티홉" and g["sub"] == "%dhop" % k) for k in (2, 3, 5, 7)}
 
-# ---------------------------------------------------------------- Section III-A
 print("== III-A  source corpus, retrieval corpus, gold articles")
 arts = [a["id"] for a in tsv("data", "article_ids.tsv")]
 excluded = [a["id"] for a in tsv("data", "excluded_article_ids.tsv")]
@@ -75,7 +72,6 @@ gold_all = {i for g in G.values() for i in g["evidence_ids"]}
 ck("unique gold articles; all in the retrieval corpus; all from 1418-1427",
    (len(gold_all), gold_all <= set(arts), all(year(a) <= 9 for a in gold_all)), (773, True, True))
 
-# ---------------------------------------------------------------- Table I
 print("== III-B, Table I  composition by question type")
 ck("questions", len(IDS), 975)
 rows = [("Alias", CAT["Alias"], 150, 75, 29.8, 1.7), ("Confusable", CAT["Confusable"], 150, 75, 23.2, 1.1),
@@ -90,7 +86,7 @@ for name, f, n, npair, ln, ev in rows:
            round(sum(len(G[i]["evidence_ids"]) for i in ids) / len(ids), 1))
     ck("Table I %s: questions, pairs, avg. len., avg. gold" % name, got, (n, npair, ln, ev))
 fam = collections.Counter(G[i]["relation_family"] for i in IDS if CAT["Temporal"](G[i]))
-ck("Table I note b, Temporal expressions: day, month, year, order",
+ck("III-B Temporal expressions: day, month, year, order",
    tuple(fam[k] for k in ("하루", "달", "해", "순서")), (62, 76, 90, 72))
 
 # Korean particles that change with the preceding name (with / without final consonant)
@@ -111,7 +107,7 @@ same = [r["pair"] for r in names
 ck("Identity pairs differing only in the name and its particle", (len(same), len(names)), (141, 150))
 
 
-# ---------------------------------------------------------------- runs
+# answers of each run, scored against data/answers.jsonl
 def load(run):
     out = {}
     for r in jl("runs", run, "answers.jsonl"):
@@ -140,7 +136,6 @@ def pair_em(run, cat):
     return pct(sum(all(v) for v in pairs.values()), len(pairs))
 
 
-# ---------------------------------------------------------------- Table II
 print("== IV-B, Table II  EM by type, Pair EM (Identity, Temporal), abstention; all 975 questions")
 T2 = {"Parametric Knowledge": (4.0, 1.3, 1.0, 1.9, 1.8, 0.7, 0.0, 23.1),
       "Gold-context": (88.7, 93.3, 71.7, 64.0, 74.7, 86.7, 58.7, 1.3),
@@ -163,7 +158,6 @@ ck("Local Search 200-question re-read: sample size, EM original, EM re-read",
    (len(sample), pct(sum(L[i]["em"] for i in sample), len(sample)), pct(sum(CTX[i]["em"] for i in sample), len(sample))),
    (200, 14.0, 14.5))
 
-# ---------------------------------------------------------------- Table III
 print("== IV-C, Table III  gold article retrieval rates")
 SEARCH = ("Vanilla RAG", "Local Search", "Basic Search")
 # an article counts as retrieved if any of its chunks reached the answer generator
@@ -173,12 +167,7 @@ temp = [i for i in IDS if CAT["Temporal"](G[i])]
 
 
 def anchor_target(i):
-    e = E[i]
-    ids = []
-    for k in ("anchor", "target"):
-        v = e[k]
-        ids.append(v if isinstance(v, str) else (v.get("source_id") or v.get("id")))
-    return set(ids)
+    return {E[i]["anchor"]["source_id"], E[i]["target"]["source_id"]}
 
 
 both = {n: pct(sum(anchor_target(i) <= R[n][i]["ctx"] for i in temp), len(temp)) for n in SEARCH}

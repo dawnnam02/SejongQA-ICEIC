@@ -1,9 +1,9 @@
 # Independent solving verification
 
-This is the protocol for the separate LLM verification stage, the first of the two verification stages applied to candidate questions. Every drafted question was solved by Claude Opus 5.5 agents that had not taken part in drafting it. The second stage, the human review, is described at the end of this file.
+The first of the two checks applied to candidate questions. Every drafted question was answered by a Claude Opus 5.5 agent that had not drafted it. The human review that followed is described at the end.
 
 ## Purpose
-The goal is to confirm that each question can be answered from its gold articles and has exactly one correct answer, so that errors in the wiki do not carry over into the questions. The automatic checks in `question_generation_rules.md` do not test whether a quotation actually supports the answer; this step does.
+To confirm that each question can be answered from its gold articles and has exactly one correct answer, so that errors in the wiki do not carry over into the questions. The automatic checks in `question_generation_rules.md` cannot tell whether a quotation actually supports the answer, but this step can.
 
 ## What the solver receives
 - Only `{id, question, evidence: [{source_id, text = full article}]}`.
@@ -26,4 +26,4 @@ The goal is to confirm that each question can be answered from its gold articles
 - Questions discarded at this stage were candidates and were never part of the benchmark; they are not included in the 25 questions excluded during human review.
 
 ## Human review
-After the LLM verification, two reviewers checked the question, answer and supporting quotations of every question against the source articles. 25 questions were excluded in this review, leaving the final 975 questions.
+After the LLM check, two reviewers compared the question, answer and quotations of every question with the source articles and removed 25 questions, leaving 975.
