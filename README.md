@@ -149,7 +149,7 @@ Data, annotations and run records: CC BY-NC 4.0. Code (`scripts/`): MIT. `graphr
 ```bibtex
 @inproceedings{kim2027sejongqa,
   title     = {SejongQA: An Evidence-Grounded Diagnostic Benchmark for Korean Historical Question Answering},
-  author    = {Kim, Hyonam and Choi, Seungyun},
+  author    = {Kim, Hyonam and Choi, Seungyun and Sun, Wookyung and Lee, Jungwon},
   booktitle = {Proceedings of the International Conference on Electronics, Information, and Communication (ICEIC)},
   year      = {2027},
   note      = {To appear}
